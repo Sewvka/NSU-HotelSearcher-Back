@@ -1,0 +1,7 @@
+requests
+sqlalchemy
+pydantic
+celery
+geopy
+cronitor
+redis

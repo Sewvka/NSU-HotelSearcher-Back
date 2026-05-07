@@ -1,0 +1,64 @@
+version: "3.0"
+services:
+  db:
+    container_name: "db"
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - custom
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+  db_test:
+    container_name: "db_test"
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres_test
+      - POSTGRES_PASSWORD=postgres_test
+      - POSTGRES_DB=postgres_test
+    ports:
+      - "5433:5432"
+    networks:
+      - custom
+  redis:
+    container_name: "redis"
+    image: redis
+    restart: always
+    ports:
+      - '6379:6379'
+    networks:
+      - custom
+  back:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "back"
+    ports:
+      - "8000:8000"
+    networks:
+      - custom
+    depends_on:
+      - db
+      - redis
+  celery:
+    build:
+      context: .
+      dockerfile: ./tasks/Dockerfile
+    container_name: "workers"
+    networks:
+      - custom
+    depends_on:
+      - redis
+      - db
+
+
+
+networks:
+  custom:
+    driver: bridge
